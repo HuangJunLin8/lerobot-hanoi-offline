@@ -58,7 +58,7 @@ python lerobot/scripts/control_robot.py teleoperate \
 任务名称
 
 ```
-TASK_NAME=MovA2C_3
+TASK_NAME=MovA2C_1 
 ```
 
 
@@ -114,15 +114,15 @@ HF_USER=ricaal
 ```
 python lerobot/scripts/control_robot.py record \
     --robot-path lerobot/configs/robot/so100.yaml \
-    --fps 30 \
+    --fps 15 \
     --repo-id ${HF_USER}/${TASK_NAME} \
     --tags so100 tutorial \
-    --warmup-time-s 5 \
+    --warmup-time-s 8 \
     --episode-time-s 40 \
     --reset-time-s 5 \
-    --num-episodes 50 \
+    --num-episodes 30 \
     --push-to-hub 0 \
-    --single-task "Move middle disk from A to B"
+    --single-task "Move biggest disk from A to C"
 ```
 
 可视化
@@ -166,7 +166,7 @@ python lerobot/scripts/control_robot.py replay \
 任务名称
 
 ```
-TASK_NAME=MovA2C_3
+TASK_NAME=MovC2B_3
 ```
 
 
@@ -201,27 +201,53 @@ videos/chunk-000 里面子文件的 mp4文件
 
 关键`.parquet` 和 `meta/episodes.jsonl `里的 `length` 要一一对应
 
-![image-20250131211814114](/notes/assets/image-20250131211814114.png)
+![image-20250131211814114](notes/assets/image-20250131211814114.png)
 
 下面这也许是length的总和，对应加减 
 
-![image-20250131212104930](/notes/assets/image-20250131212104930.png)
+![image-20250131212104930](notes/assets/image-20250131212104930.png)
 
 
 
-## d. 重新计算统计量 
+## d. 重新计算统计量
 
-（新写的文件**`ReConsolidate.py`**）
+### 计算 total_frames
+
+（新写的文件**`test/total_length.py`**）
 
 ```
-python lerobot/scripts/ReConsolidate.py --dataset_repo_id ${HF_USER}/${TASK_NAME}
+python test/total_length.py --dataset_repo_id ${HF_USER}/${TASK_NAME}
 ```
 
-![image-20250131212313779](/notes/assets/image-20250131212313779.png)
+```
+# total_frames: 8967
+```
+
+修改元数据文件 `meta/info.json` 里的 total_frames 对应值
+
+
+
+### 计算 mean、std、max、min
+
+（新写的文件**`test/ReConsolidate.py`**）
+
+```
+python test/ReConsolidate.py --dataset_repo_id ${HF_USER}/${TASK_NAME}
+```
+
+![image-20250131212313779](notes/assets/image-20250131212313779.png)
 
 **重新计算结果在 ` /meta/stats.json`**
 
+
+
+
+
 # 6. 开始训练
+
+```
+conda activate lerobot
+```
 
 登陆可视化工具  [apikey网站](https://wandb.ai/authorize)
 
@@ -232,7 +258,7 @@ wandb login
 任务名称
 
 ```
-TASK_NAME=MovA2C_3
+TASK_NAME=MovC2B_3
 ```
 
 
