@@ -266,11 +266,12 @@ def record(
     # 2. give times to the robot devices to connect and start synchronizing,
     # 3. place the cameras windows on screen
     enable_teleoperation = policy is None
-    log_say("Warmup record", play_sounds)
-    warmup_record(robot, events, enable_teleoperation, warmup_time_s, display_cameras, fps)
 
     if has_method(robot, "teleop_safety_stop"):
         robot.teleop_safety_stop()
+    
+    log_say("First Warmup record", play_sounds)
+    warmup_record(robot, events, enable_teleoperation, warmup_time_s, display_cameras, fps)
 
     recorded_episodes = 0
     while True:
@@ -281,6 +282,10 @@ def record(
         # input() messes with them.
         # if multi_task:
         #     task = input("Enter your task description: ")
+
+        log_say("Warmup record", play_sounds)
+        warmup_record(robot, events, enable_teleoperation, warmup_time_s, display_cameras, fps)
+
 
         log_say(f"Recording episode {dataset.num_episodes}", play_sounds)
         record_episode(

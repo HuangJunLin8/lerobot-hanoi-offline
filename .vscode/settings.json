@@ -1,0 +1,6 @@
+{
+    "python.defaultInterpreterPath": "/opt/miniconda3/envs/lerobot/bin/python",
+    "terminal.integrated.env.linux": {
+        "CONDA_DEFAULT_ENV": "lerobot"
+    }
+}

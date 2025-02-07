@@ -44,13 +44,13 @@ follower_arms: # 从臂
 cameras:
   laptop:   # 顶端相机
     _target_: lerobot.common.robot_devices.cameras.opencv.OpenCVCamera
-    camera_index: 0
+    camera_index: 2
     fps: 15
     width: 800
     height: 480
   phone:   # 腕上相机
     _target_: lerobot.common.robot_devices.cameras.opencv.OpenCVCamera
-    camera_index: 4
+    camera_index: 5                                                                                                                                                                                                                                                                                                                                                                                                                           
     fps: 15
     width: 800
     height: 480
