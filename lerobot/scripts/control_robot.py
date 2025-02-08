@@ -265,7 +265,8 @@ def record(
     # 1. teleoperate the robot to move it in starting position if no policy provided,
     # 2. give times to the robot devices to connect and start synchronizing,
     # 3. place the cameras windows on screen
-    enable_teleoperation = policy is None
+    # enable_teleoperation = policy is None
+    enable_teleoperation = True  # 默认热身可摇操作， 后面由模型控制
 
     if has_method(robot, "teleop_safety_stop"):
         robot.teleop_safety_stop()
