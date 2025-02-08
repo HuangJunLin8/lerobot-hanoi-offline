@@ -1,5 +1,7 @@
 import torch
 import logging
+from pathlib import Path
+from typing import List
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
 from lerobot.common.robot_devices.robots.factory import make_robot
 from lerobot.common.utils.utils import init_hydra_config, get_safe_torch_device, init_logging, log_say, set_global_seed
@@ -25,9 +27,12 @@ def init_policy(pretrained_policy_paths, policy_overrides):
     for pretrained_policy_path in pretrained_policy_paths:
         # 加载每个模型的配置
         hydra_cfg = init_hydra_config(pretrained_policy_path + "/config.yaml", policy_overrides)
+        
         policy = make_policy(hydra_cfg=hydra_cfg, pretrained_policy_name_or_path=pretrained_policy_path)
         policies.append(policy)
+        
         policy_fps = hydra_cfg.env.fps
+        use_amp = hydra_cfg.use_amp
 
         # 获取设备
         device = get_safe_torch_device(hydra_cfg.device, log=True)
@@ -42,27 +47,37 @@ def init_policy(pretrained_policy_paths, policy_overrides):
     torch.backends.cuda.matmul.allow_tf32 = True
     set_global_seed(hydra_cfg.seed)
 
-    return policies, policy_fps, device
+    return policies, policy_fps, device, use_amp
 
 def execute_model_actions(
-        pretrained_model_paths, 
-        robot_cfg_path,
-        policy_overrides, 
-        warmup_time_s=8, 
-        num_episodes=10,
-        episode_time_s=30,
-        display_cameras=False
+        pretrained_model_paths: Path, 
+        robot_cfg_path: Path,
+        repo_id: str,
+        root: Path = None,
+        video: bool = True,
+        num_image_writer_processes: int = 0,
+        num_image_writer_threads_per_camera: int = 4,
+        policy_overrides: List[str] | None = None, 
+        warmup_time_s: int | float = 8, 
+        num_episodes: int = 1,
+        episode_time_s: int = 30,
+        display_cameras: bool = True,
         ):
     """
     执行多个预训练模型的动作，每个模型顺序执行一次动作。
 
     :param pretrained_model_paths: 预训练模型的路径列表
     :param robot_cfg_path: 机器人的配置路径
-    :param policy_overrides: 策略的覆盖参数列表
-    :param warmup_time_s: 热身时间（秒）
-    :param num_episodes: 记录的剧集数量
-    :param episode_time_s: 剧集时间（秒）
-    :param display_cameras: 是否显示相机
+    :param repo_id: 数据集的ID
+    :param root: 数据集的根目录
+    :param video: 是否使用视频
+    :param num_image_writer_processes: 用于写入图像的进程数量
+    :param num_image_writer_threads_per_camera: 每个相机用于写入图像的线程数量
+    :param policy_overrides: 策略的覆盖参数
+    :param warmup_time_s: 预热时间（秒）
+    :param num_episodes: 录制的 episode 数
+    :param episode_time_s: episode 的时间（秒）
+    :param display_cameras: 是否显示相机图像
     """
     robot_cfg = init_hydra_config(robot_cfg_path, policy_overrides)
     robot = make_robot(robot_cfg)
@@ -70,40 +85,58 @@ def execute_model_actions(
     if not robot.is_connected:
         robot.connect()
 
-    if has_method(robot, "teleop_safety_stop"):
-        robot.teleop_safety_stop()
-
-    policies, policy_fps, device = init_policy(pretrained_model_paths, policy_overrides)
+    policies, policy_fps, device, use_amp = init_policy(pretrained_model_paths, policy_overrides)
 
     listener, events = init_keyboard_listener()
 
+    # 建立空的数据集（每个episode存所有7步动作？）
+    dataset = LeRobotDataset.create(
+        repo_id=repo_id,
+        fps=policy_fps,
+        root=root,
+        robot=robot,
+        use_videos=video,
+        image_writer_processes=num_image_writer_processes,
+        image_writer_threads=num_image_writer_threads_per_camera * len(robot.cameras),
+    )
+
     log_say("Warmup record", play_sounds=True)
 
+    # 热身（可摇操摆正机械臂的位置）
     warmup_record(robot, events, 
                   enable_teleoperation=True, 
                   warmup_time_s=warmup_time_s, 
                   display_cameras=display_cameras, 
                   fps=policy_fps)
     
-    # recorded_episodes = 0
-    # while True:
-    #     if recorded_episodes >= num_episodes:
-    #         break
-        
-    #     log_say(f"Recording episode {dataset.num_episodes}", play_sounds=True)
-    #     record_episode(
-    #         dataset=dataset,
-    #         robot=robot,
-    #         events=events,
-    #         episode_time_s=episode_time_s,
-    #         display_cameras=display_cameras,
-    #         policy=policy,
-    #         device=device,
-    #         use_amp=use_amp,
-    #         fps=fps,
-    #     )
+    if has_method(robot, "teleop_safety_stop"):
+        robot.teleop_safety_stop()
+    
+    recorded_episodes = 0
+    while True:
+        if recorded_episodes >= num_episodes:
+            break
 
-    # stop_recording(robot, listener, display_cameras=display_cameras)
+        for i in range(7):
+            log_say(f"Running step {i}", play_sounds=True)
+
+            record_episode(
+                dataset=dataset,
+                robot=robot,
+                events=events,
+                episode_time_s=episode_time_s,
+                display_cameras=display_cameras,
+                policy=policies[i],
+                device=device,
+                use_amp=use_amp,
+                fps=policy_fps,
+            )
+
+        dataset.save_episode("Move 3 disks from A to C")
+        recorded_episodes += 1
+
+    log_say("Stop recording", play_sounds=True, blocking=True)
+    stop_recording(robot, listener, display_cameras=display_cameras)
     
     if robot.is_connected:
         # 手动断开连接以避免在进程终止时由于相机线程未正确退出
@@ -113,8 +146,6 @@ def execute_model_actions(
 
 def main():
     # --------------------------初始化---------------------------
-    display_cameras=True # 显示相机
-
     pretrained_model_paths = [
         "outputs/train/Task01_MovA2C_3/checkpoints/last/pretrained_model",
         "outputs/train/Task02_MovA2B_2/checkpoints/last/pretrained_model",
@@ -131,20 +162,29 @@ def main():
 
     init_logging()
 
-
     # 执行每个模型的动作
-    execute_model_actions(pretrained_model_paths=pretrained_model_paths,
+    execute_model_actions( repo_id="ricaal/autoHanoi",
+                           pretrained_model_paths=pretrained_model_paths,
                            robot_cfg_path=robot_cfg_path,
                            policy_overrides=policy_overrides, 
-                           num_episodes=10,
-                           display_cameras=display_cameras)
-    
-
-    log_say("Stop recording", play_sounds=True, blocking=True)
-    
-    
-
-        
+                           episode_time_s=25,
+                           display_cameras=True)       
 
 if __name__ == "__main__":
     main()
+
+
+
+"""
+开始测试一次性走完所有动作
+python3 test/load_and_execute_models.py
+
+
+
+可视化结果
+python lerobot/scripts/visualize_dataset_html.py \
+--repo-id ricaal/autoHanoi \
+--root ~/.cache/huggingface/lerobot/ricaal/autoHanoi \
+--local-files-only 1 
+
+"""
