@@ -2,6 +2,7 @@ import torch
 import logging
 from pathlib import Path
 from typing import List
+from hanoi_algo import *
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
 from lerobot.common.robot_devices.robots.factory import make_robot
 from lerobot.common.utils.utils import init_hydra_config, get_safe_torch_device, init_logging, log_say, set_global_seed
@@ -19,6 +20,18 @@ from lerobot.common.robot_devices.control_utils import (
     stop_recording,
     warmup_record,
 )
+
+def generate_task_path(initial_state, move):
+    """
+    根据 initial_state 和 move 生成路径
+    """
+    # 将状态格式化为 A[123]-B[4]-C[]
+    state_repr = "-".join([f"{rod}[{''.join(map(str, disks))}]" for rod, disks in initial_state.items()])
+    # 动作描述
+    move_desc = f"mv{move['from']}2{move['to']}"
+    # return f"outputs/train/state_{state_repr}_{move_desc}/checkpoints/last/pretrained_model"
+    # return f"outputs/train/{state_repr}_{move_desc}/checkpoints/last/pretrained_model"
+    return f"outputs/train/{state_repr}_{move_desc}/last/pretrained_model"
 
 def init_policy(pretrained_policy_paths, policy_overrides):
     """加载多个预训练策略模型，并返回它们的列表"""
@@ -120,6 +133,7 @@ def execute_model_actions(
         for i in range(7):
             log_say(f"Running step {i}", play_sounds=True)
 
+            # 右方向键会退出当前的模型（exit_early）
             record_episode(
                 dataset=dataset,
                 robot=robot,
@@ -145,16 +159,22 @@ def execute_model_actions(
 
 
 def main():
-    # --------------------------初始化---------------------------
-    pretrained_model_paths = [
-        "outputs/train/Task01_MovA2C_3/checkpoints/last/pretrained_model",
-        "outputs/train/Task02_MovA2B_2/checkpoints/last/pretrained_model",
-        "outputs/train/Task03_MovC2B_3/checkpoints/last/pretrained_model",
-        "outputs/train/Task04_MovA2C_1/checkpoints/last/pretrained_model",
-        "outputs/train/Task05_MovB2A_3/checkpoints/last/pretrained_model",
-        "outputs/train/Task06_MovB2C_2/checkpoints/last/pretrained_model",
-        "outputs/train/Task07_MovA2C_3/checkpoints/last/pretrained_model"
-    ]
+    # 初始状态
+    initial_state = {
+    "A": [1, 2, 3],
+    "B": [],
+    "C": []
+    }
+    
+    # 汉诺塔算法求解
+    moves, states = solve_hanoi(initial_state)
+    
+    # 解析模型路径
+    pretrained_model_paths = []
+    for i in range(len(moves)):
+        pretrained_model_paths.append(generate_task_path(states[i], moves[i])) 
+    
+    # print(pretrained_model_paths)    
 
     policy_overrides = [] 
 
@@ -171,6 +191,7 @@ def main():
                            display_cameras=True)       
 
 
+
 if __name__ == "__main__":
     main()
 
@@ -182,7 +203,6 @@ Left arrow key  :   Exiting loop and rerecord the last episode...
 Escape key      :   Stopping data recording...
 
 """
-
 
 
 """
