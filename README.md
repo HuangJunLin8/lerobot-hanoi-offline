@@ -32,42 +32,52 @@
 
 ![d4b12d8200423afb0b53ee0bcc456a49](notes/assets/d4b12d8200423afb0b53ee0bcc456a49.jpg)
 
-## 1. Move smallest disk from A to C 
+
+
+## 动作分解：7步
+
+### 1. Move smallest disk from A to C 
 
 ![task1_new](notes/assets/task1_new.gif)
 
 ------
 
-## 2. Move middle disk from A to B 
+### 2. Move middle disk from A to B 
 
 ![task2](notes/assets/task2.gif)
 
 ------
 
-## 3. Move smallest disk from C to B 
+### 3. Move smallest disk from C to B 
 
 ![task3](notes/assets/task3.gif)
 
 ------
 
-## 4. Move biggest disk from A to C
+### 4. Move biggest disk from A to C
 
 ![task4](notes/assets/task4.gif)
 
 ------
 
-## 5. Move smallest disk from B to A
+### 5. Move smallest disk from B to A
 
 ![task5](notes/assets/task5.gif)
 
 ------
 
-## 6. Move middle disk from B to C
+### 6. Move middle disk from B to C
 
 ![task6](notes/assets/task6.gif)
 
 ------
 
-## 7. Move smallest disk from A to C
+### 7. Move smallest disk from A to C
 
 ![task7](notes/assets/task7.gif)
+
+
+
+## 按序执行
+
+[Watch the video](notes/assets/All_step_top.mp4)
