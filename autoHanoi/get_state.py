@@ -55,7 +55,7 @@ def analyze_image_step_1(image_path):
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4-vision-preview",
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "user",
@@ -128,14 +128,14 @@ def send_to_arm(moves):
         # 实际实现中这里应该调用机械臂的控制接口
         time.sleep(1)  # 模拟机械臂移动时间
 
-def main():
+def get_state():
     try:
         # 1. 捕获图像
         print("正在捕获图像...")
         
         # 丢掉前几张，曝光错误的照片
         for i in range(4):
-            image = capture_image(2)
+            image = capture_image(4)
         
         # 2. 保存图像
         image_path = save_image(image)
@@ -154,14 +154,11 @@ def main():
         
         # 5. 发送给机械臂
         # send_to_arm(moves)
+        return states
         
     except Exception as e:
         print(f"发生错误：{str(e)}")
 
-
-
-if __name__ == "__main__":
-    main()
 
 
 """

@@ -1,5 +1,6 @@
 import torch
 import logging
+from get_state import get_state
 from pathlib import Path
 from typing import List
 from hanoi_algo import *
@@ -71,7 +72,7 @@ def execute_model_actions(
         num_image_writer_processes: int = 0,
         num_image_writer_threads_per_camera: int = 4,
         policy_overrides: List[str] | None = None, 
-        warmup_time_s: int | float = 8, 
+        warmup_time_s: int | float = 5, 
         num_episodes: int = 1,
         episode_time_s: int = 30,
         display_cameras: bool = True,
@@ -160,11 +161,10 @@ def execute_model_actions(
 
 def main():
     # 初始状态
-    initial_state = {
-    "A": [1, 2, 3],
-    "B": [],
-    "C": []
-    }
+    initial_state = get_state()
+
+    # 测试
+    # initial_state= {'A': [1, 2, 3], 'B': [], 'C': []}
     
     # 汉诺塔算法求解
     moves, states = solve_hanoi(initial_state)

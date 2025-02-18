@@ -24,6 +24,9 @@ def solve_hanoi(initial_state):
     hanoi(n, 'A', 'C', 'B', initial_state, moves, states)
     return moves, states
 
+
+
+"""
 # 测试
 initial_state = {
     "A": [1, 2, 3],
@@ -31,7 +34,6 @@ initial_state = {
     "C": []
 }
 
-"""
 
 # 汉诺塔算法求解
 moves, states = solve_hanoi(initial_state)

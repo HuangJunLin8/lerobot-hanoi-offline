@@ -129,6 +129,7 @@ env/
 venv/
 env.bak/
 venv.bak/
+!lerobot/configs/env
 
 # Spyder project settings
 .spyderproject
