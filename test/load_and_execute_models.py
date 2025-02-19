@@ -20,6 +20,7 @@ from lerobot.common.robot_devices.control_utils import (
     warmup_record,
 )
 
+
 def init_policy(pretrained_policy_paths, policy_overrides):
     """加载多个预训练策略模型，并返回它们的列表"""
     policies = []
@@ -27,10 +28,10 @@ def init_policy(pretrained_policy_paths, policy_overrides):
     for pretrained_policy_path in pretrained_policy_paths:
         # 加载每个模型的配置
         hydra_cfg = init_hydra_config(pretrained_policy_path + "/config.yaml", policy_overrides)
-        
+
         policy = make_policy(hydra_cfg=hydra_cfg, pretrained_policy_name_or_path=pretrained_policy_path)
         policies.append(policy)
-        
+
         policy_fps = hydra_cfg.env.fps
         use_amp = hydra_cfg.use_amp
 
@@ -40,29 +41,30 @@ def init_policy(pretrained_policy_paths, policy_overrides):
         # 设置模型
         policy.eval()  # 设置为评估模式
         policy.to(device)
-    
+
     print(f"Using device: {device}")
-    
+
     torch.backends.cudnn.benchmark = True
     torch.backends.cuda.matmul.allow_tf32 = True
     set_global_seed(hydra_cfg.seed)
 
     return policies, policy_fps, device, use_amp
 
+
 def execute_model_actions(
-        pretrained_model_paths: Path, 
+        pretrained_model_paths: Path,
         robot_cfg_path: Path,
         repo_id: str,
         root: Path = None,
         video: bool = True,
         num_image_writer_processes: int = 0,
         num_image_writer_threads_per_camera: int = 4,
-        policy_overrides: List[str] | None = None, 
-        warmup_time_s: int | float = 8, 
+        policy_overrides: List[str] | None = None,
+        warmup_time_s: int | float = 8,
         num_episodes: int = 1,
         episode_time_s: int = 30,
         display_cameras: bool = True,
-        ):
+):
     """
     执行多个预训练模型的动作，每个模型顺序执行一次动作。
 
@@ -103,15 +105,15 @@ def execute_model_actions(
     log_say("Warmup record", play_sounds=True)
 
     # 热身（可摇操摆正机械臂的位置）
-    warmup_record(robot, events, 
-                  enable_teleoperation=True, 
-                  warmup_time_s=warmup_time_s, 
-                  display_cameras=display_cameras, 
+    warmup_record(robot, events,
+                  enable_teleoperation=True,
+                  warmup_time_s=warmup_time_s,
+                  display_cameras=display_cameras,
                   fps=policy_fps)
-    
+
     if has_method(robot, "teleop_safety_stop"):
         robot.teleop_safety_stop()
-    
+
     recorded_episodes = 0
     while True:
         if recorded_episodes >= num_episodes:
@@ -137,7 +139,7 @@ def execute_model_actions(
 
     log_say("Stop recording", play_sounds=True, blocking=True)
     stop_recording(robot, listener, display_cameras=display_cameras)
-    
+
     if robot.is_connected:
         # 手动断开连接以避免在进程终止时由于相机线程未正确退出
         # 而导致“核心转储” ("Core dump")
@@ -156,24 +158,23 @@ def main():
         "outputs/train/Task07_MovA2C_3/checkpoints/last/pretrained_model"
     ]
 
-    policy_overrides = [] 
+    policy_overrides = []
 
     robot_cfg_path = "lerobot/configs/robot/so100.yaml"
 
     init_logging()
 
     # 执行每个模型的动作
-    execute_model_actions( repo_id="ricaal/autoHanoi",
-                           pretrained_model_paths=pretrained_model_paths,
-                           robot_cfg_path=robot_cfg_path,
-                           policy_overrides=policy_overrides, 
-                           episode_time_s=25,
-                           display_cameras=True)       
+    execute_model_actions(repo_id="ricaal/autoHanoi",
+                          pretrained_model_paths=pretrained_model_paths,
+                          robot_cfg_path=robot_cfg_path,
+                          policy_overrides=policy_overrides,
+                          episode_time_s=25,
+                          display_cameras=True)
 
 
 if __name__ == "__main__":
     main()
-
 
 """
 
@@ -182,8 +183,6 @@ Left arrow key  :   Exiting loop and rerecord the last episode...
 Escape key      :   Stopping data recording...
 
 """
-
-
 
 """
 开始测试一次性走完所有动作

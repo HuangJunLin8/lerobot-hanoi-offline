@@ -11,6 +11,9 @@ camera2.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 camera2.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 camera2.set(cv2.CAP_PROP_FPS, 15)
 
+print(camera1.isOpened())
+print(camera2.isOpened())
+
 while True:
     # 从两个摄像头读取帧
     ret1, frame1 = camera1.read()

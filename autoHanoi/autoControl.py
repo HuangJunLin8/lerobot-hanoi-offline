@@ -164,7 +164,7 @@ def main():
     initial_state = get_state()
 
     # 测试
-    # initial_state= {'A': [1, 2, 3], 'B': [], 'C': []}
+    # initial_state= {'A': [1, 2, 3, 4], 'B': [], 'C': []}
     
     # 汉诺塔算法求解
     moves, states = solve_hanoi(initial_state)

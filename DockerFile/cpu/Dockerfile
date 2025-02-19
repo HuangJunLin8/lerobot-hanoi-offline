@@ -26,6 +26,18 @@ RUN curl -fsSLO https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Minicond
 ENV PATH="/opt/miniconda/bin:$PATH"
 RUN conda init bash
 
+# 配置 Conda 镜像源（清华源）
+RUN conda config --remove-key channels && \
+    conda config --add channels defaults && \
+    conda config --add channels https://repo.anaconda.com/pkgs/r && \
+    conda config --add channels https://repo.anaconda.com/pkgs/main && \
+    conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/ && \
+    conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/ && \
+    conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/ && \
+    conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/linux-64/ && \
+    conda config --set show_channel_urls true && \
+    conda config --set auto_activate_base false
+
 # 创建 Conda 虚拟环境（自动模式）
 RUN conda create -y -n lerobot-env python=${PYTHON_VERSION}
 ENV CONDA_DEFAULT_ENV=lerobot-env
@@ -37,10 +49,17 @@ RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 安装 LeRobot
 RUN git lfs install
-RUN git clone https://github.com/huggingface/lerobot.git /lerobot
-WORKDIR /lerobot
-RUN pip install --no-cache-dir ".[test, aloha, xarm, pusht, dynamixel]" \
+RUN git clone https://github.com/huggingface/lerobot.git /root/lerobot
+WORKDIR /root/lerobot
+
+RUN pip install --no-cache-dir -e .  \
     --extra-index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir ".[feetech]" \
+    --extra-index-url https://download.pytorch.org/whl/cpu
+
+RUN conda install -y -c conda-forge ffmpeg
+RUN pip uninstall -y opencv-python
+RUN conda install -y -c conda-forge "opencv>=4.10.0"
 
 # 设置 MuJoCo 渲染
 ENV MUJOCO_GL="egl"

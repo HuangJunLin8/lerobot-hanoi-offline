@@ -1,4 +1,14 @@
-
+def generate_task_path(initial_state, move):
+    """
+    根据 initial_state 和 move 生成路径
+    """
+    # 将状态格式化为 A[123]-B[4]-C[]
+    state_repr = "-".join([f"{rod}[{''.join(map(str, disks))}]" for rod, disks in initial_state.items()])
+    # 动作描述
+    move_desc = f"mv{move['from']}2{move['to']}"
+    # return f"outputs/train/state_{state_repr}_{move_desc}/checkpoints/last/pretrained_model"
+    # return f"outputs/train/{state_repr}_{move_desc}/checkpoints/last/pretrained_model"
+    return f"outputs/train/{state_repr}_{move_desc}/last/pretrained_model"
 
 def hanoi(n, source, target, auxiliary, initial_state, moves, states):
     if n == 0:
@@ -26,10 +36,10 @@ def solve_hanoi(initial_state):
 
 
 
-"""
+
 # 测试
 initial_state = {
-    "A": [1, 2, 3],
+    "A": [1, 2, 3, 4],
     "B": [],
     "C": []
 }
@@ -52,5 +62,3 @@ moves, states = solve_hanoi(initial_state)
 for i in range(len(moves)):
     path = generate_task_path(states[i], moves[i])
     print(path)
-
-"""
