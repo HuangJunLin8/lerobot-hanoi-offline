@@ -51,7 +51,7 @@ moves, states = solve_hanoi(initial_state)
 
 # # 输出动作列表
 # for move in moves:
-#     print("Moves:", move)
+    # print("Moves:", move)
 
 # # 输出状态列表
 # for state in states:
