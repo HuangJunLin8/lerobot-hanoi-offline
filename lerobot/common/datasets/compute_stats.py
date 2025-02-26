@@ -63,7 +63,7 @@ def get_stats_einops_patterns(dataset, num_workers=0):
     return stats_patterns
 
 
-def compute_stats(dataset, batch_size=8, num_workers=8, max_num_samples=None):
+def compute_stats(dataset, batch_size=8, num_workers=0, max_num_samples=None):
     """Compute mean/std and min/max statistics of all data keys in a LeRobotDataset."""
     if max_num_samples is None:
         max_num_samples = len(dataset)
@@ -96,10 +96,19 @@ def compute_stats(dataset, batch_size=8, num_workers=8, max_num_samples=None):
     # surprises when rerunning the sampler.
     first_batch = None
     running_item_count = 0  # for online mean computation
+
+    # for idx in range(10486, 10737):
+    #     try:
+    #         sample = dataset[idx]
+    #         print(f"Sample {idx}: ")
+    #     except Exception as e:
+    #         print(f"Error in sample {idx}: {e}")
+
     dataloader = create_seeded_dataloader(dataset, batch_size, seed=1337)
     for i, batch in enumerate(
         tqdm.tqdm(dataloader, total=ceil(max_num_samples / batch_size), desc="Compute mean, min, max")
     ):
+    # for i, batch in enumerate(dataloader):
         this_batch_size = len(batch["index"])
         running_item_count += this_batch_size
         if first_batch is None:

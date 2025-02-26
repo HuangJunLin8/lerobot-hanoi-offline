@@ -664,12 +664,17 @@ class LeRobotDataset(torch.utils.data.Dataset):
         return self.num_frames
 
     def __getitem__(self, idx) -> dict:
+        # print("\n\n\n-----------------------------\n")
+        # print(f"正在处理索引: {idx}")  # 打印当前索引
         item = self.hf_dataset[idx]
+        # print(f"从 hf_dataset 中获取的 item: {item}")  # 打印从 hf_dataset 中获取的 item
         ep_idx = item["episode_index"].item()
+        # print(f"Episode 索引: {ep_idx}")  # 打印 episode_index
 
         query_indices = None
         if self.delta_indices is not None:
             current_ep_idx = self.episodes.index(ep_idx) if self.episodes is not None else ep_idx
+            # print(f"当前 Episode 索引: {current_ep_idx}")  # 打印当前 episode 索引
             query_indices, padding = self._get_query_indices(idx, current_ep_idx)
             query_result = self._query_hf_dataset(query_indices)
             item = {**item, **padding}

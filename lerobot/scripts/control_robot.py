@@ -236,7 +236,7 @@ def record(
         dataset = LeRobotDataset(
             repo_id,
             root=root,
-            local_files_only=local_files_only,
+            local_files_only=True,
         )
         dataset.start_image_writer(
             num_processes=num_image_writer_processes,
