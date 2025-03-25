@@ -198,13 +198,13 @@ def delete_episode(base_path, episode_index_to_delete):
                     os.rename(src_file, dest_file)
                     # print(f"Renamed file {src_file} to {dest_file}")
 
+    updated_episodes = []
     # 更新 episodes.jsonl
     if episodes_file.exists():
         with open(episodes_file, 'r') as f:
             episodes = [json.loads(line) for line in f]
 
         # 过滤掉要删除的 episode，并更新索引
-        updated_episodes = []
         for episode in episodes:
             if episode['episode_index'] != episode_index_to_delete:
                 if episode['episode_index'] > episode_index_to_delete:

@@ -27,12 +27,12 @@ def generate_task_path(initial_state, move):
     根据 initial_state 和 move 生成路径
     """
     # 将状态格式化为 A[123]-B[4]-C[]
-    state_repr = "-".join([f"{rod}[{''.join(map(str, disks))}]" for rod, disks in initial_state.items()])
+    state_repr = "-".join([f"{rod}{''.join(map(str, disks))}" for rod, disks in initial_state.items()])
     # 动作描述
     move_desc = f"mv{move['from']}2{move['to']}"
     # return f"outputs/train/state_{state_repr}_{move_desc}/checkpoints/last/pretrained_model"
     # return f"outputs/train/{state_repr}_{move_desc}/checkpoints/last/pretrained_model"
-    return f"outputs/train/{state_repr}_{move_desc}/last/pretrained_model"
+    return f"outputs/train/{state_repr}_{move_desc}/checkpoints/last/pretrained_model"
 
 def init_policy(pretrained_policy_paths, policy_overrides):
     """加载多个预训练策略模型，并返回它们的列表"""
@@ -103,7 +103,7 @@ def execute_model_actions(
 
     listener, events = init_keyboard_listener()
 
-    # 建立空的数据集（每个episode存所有7步动作？）
+    # 建立空的数据集（每个episode存所有7步动作）
     dataset = LeRobotDataset.create(
         repo_id=repo_id,
         fps=policy_fps,
@@ -131,7 +131,7 @@ def execute_model_actions(
         if recorded_episodes >= num_episodes:
             break
 
-        for i in range(7):
+        for i in range(len(pretrained_model_paths)):
             log_say(f"Running step {i}", play_sounds=True)
 
             # 右方向键会退出当前的模型（exit_early）
@@ -161,10 +161,10 @@ def execute_model_actions(
 
 def main():
     # 初始状态
-    initial_state = get_state()
+    # initial_state = get_state()
 
     # 测试
-    # initial_state= {'A': [1, 2, 3, 4], 'B': [], 'C': []}
+    initial_state= {'A': [1, 2, 3], 'B': [], 'C': []}
     
     # 汉诺塔算法求解
     moves, states = solve_hanoi(initial_state)
@@ -174,21 +174,21 @@ def main():
     for i in range(len(moves)):
         pretrained_model_paths.append(generate_task_path(states[i], moves[i])) 
     
-    # print(pretrained_model_paths)    
+        print(generate_task_path(states[i], moves[i]))    
 
     policy_overrides = [] 
 
     robot_cfg_path = "lerobot/configs/robot/so100.yaml"
 
-    init_logging()
+    # init_logging()
 
-    # 执行每个模型的动作
-    execute_model_actions( repo_id="ricaal/autoHanoi",
-                           pretrained_model_paths=pretrained_model_paths,
-                           robot_cfg_path=robot_cfg_path,
-                           policy_overrides=policy_overrides, 
-                           episode_time_s=25,
-                           display_cameras=True)       
+    # # 执行每个模型的动作
+    # execute_model_actions( repo_id="ricaal/autoHanoi",
+    #                        pretrained_model_paths=pretrained_model_paths,
+    #                        robot_cfg_path=robot_cfg_path,
+    #                        policy_overrides=policy_overrides, 
+    #                        episode_time_s=50,
+    #                        display_cameras=True)       
 
 
 

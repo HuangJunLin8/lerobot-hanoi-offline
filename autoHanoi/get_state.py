@@ -44,18 +44,15 @@ def encode_image(image_path):
 
 def analyze_image_step_1(image_path):
     # 第一步：请求分析图片
-
     base64_image = encode_image(image_path)
-
     prompt = """请分析这张汉诺塔游戏的图片。
                 仅仅告诉我图片内汉诺塔当前的状态，
                 包括柱子有多少个，以及各个柱子上圆盘的个数，相对大小顺序
                 （一个柱子内圆盘大小顺序，和柱子之间圆盘大小顺序）
                 请不要回答其他多余的文字，方便我进行后续的文字处理"""
-
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[
                 {
                     "role": "user",
@@ -79,7 +76,6 @@ def analyze_image_step_1(image_path):
 
 def analyze_image_step_2(analysis_result):
     # 第二步：在分析结果的基础上完成后续任务
-
     prompt = """基于分析结果，数字化表示汉诺塔圆盘的分布情况，
     格式如下：
     {"A": [], "B": [], "C": [], ...}
@@ -87,12 +83,11 @@ def analyze_image_step_2(analysis_result):
     1. 列表里面是圆盘的编号，顺序是升序
     2. 圆盘从1开始编号，编号越小的圆盘大小越大，编号不能重复。
     3. 不要回答其他多余的文字，方便我进行后续的文字处理。"""
-
     try:
         response = client.chat.completions.create(
+            model="gpt-4o-mini",
             # model="deepseek-chat",
             # model="gpt-4o",  
-            model="gpt-4o-mini",
 
             messages=[
                 {
