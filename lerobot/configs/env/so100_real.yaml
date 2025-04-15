@@ -1,6 +1,6 @@
 # @package _global_
 
-fps: 15
+fps: 30
 
 env:
   name: real_world

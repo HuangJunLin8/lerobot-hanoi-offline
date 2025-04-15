@@ -198,13 +198,13 @@ def delete_episode(base_path, episode_index_to_delete):
                     os.rename(src_file, dest_file)
                     # print(f"Renamed file {src_file} to {dest_file}")
 
+    updated_episodes = []
     # 更新 episodes.jsonl
     if episodes_file.exists():
         with open(episodes_file, 'r') as f:
             episodes = [json.loads(line) for line in f]
 
         # 过滤掉要删除的 episode，并更新索引
-        updated_episodes = []
         for episode in episodes:
             if episode['episode_index'] != episode_index_to_delete:
                 if episode['episode_index'] > episode_index_to_delete:
@@ -341,6 +341,7 @@ def merge_same_action(base_path, num_items=None):
 
 if __name__ == "__main__":
     # 删除第 38 个episode
+    # base_path = "/home/rical/.cache/huggingface/lerobot/test"
     # delete_episode(base_path, 38)
 
     # 合并两个数据集
@@ -350,8 +351,10 @@ if __name__ == "__main__":
     # merge_datasets(dataset1, dataset2, output)
 
     # 合并目录 test 下，动作后缀相同的数据集（仅合并前20个episode）
-    base_path = "/home/rical/.cache/huggingface/lerobot/test"
-    merge_same_action(base_path, num_items=20)
+    # base_path = "/home/rical/.cache/huggingface/lerobot/test"
+    # merge_same_action(base_path, num_items=20)
 
 
+    base_path = "/home/rical/.cache/huggingface/lerobot/ricaal/A123-B4-C_mvA2C"
+    delete_episode(base_path, 33)
 

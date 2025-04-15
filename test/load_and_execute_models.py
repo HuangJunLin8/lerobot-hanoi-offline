@@ -146,6 +146,7 @@ def execute_model_actions(
         robot.disconnect()
 
 
+
 def main():
     # --------------------------初始化---------------------------
     pretrained_model_paths = [
