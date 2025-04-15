@@ -341,6 +341,7 @@ def merge_same_action(base_path, num_items=None):
 
 if __name__ == "__main__":
     # 删除第 38 个episode
+    # base_path = "/home/rical/.cache/huggingface/lerobot/test"
     # delete_episode(base_path, 38)
 
     # 合并两个数据集
@@ -350,8 +351,10 @@ if __name__ == "__main__":
     # merge_datasets(dataset1, dataset2, output)
 
     # 合并目录 test 下，动作后缀相同的数据集（仅合并前20个episode）
-    base_path = "/home/rical/.cache/huggingface/lerobot/test"
-    merge_same_action(base_path, num_items=20)
+    # base_path = "/home/rical/.cache/huggingface/lerobot/test"
+    # merge_same_action(base_path, num_items=20)
 
 
+    base_path = "/home/rical/.cache/huggingface/lerobot/ricaal/A123-B4-C_mvA2C"
+    delete_episode(base_path, 33)
 
