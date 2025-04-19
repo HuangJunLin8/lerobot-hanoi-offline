@@ -1,3 +1,5 @@
+本仓库代码已停止维护，项目已基于新版 lerobot 重构，并迁移到新地址：
+👉 https://github.com/HuangJunLin8/lerobot-hanoi.git
 
 
 # 项目概述
